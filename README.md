@@ -1,6 +1,6 @@
 # 1. Introduction
 
-Deep learning has become a central tool in the medical field, playing a crucial role in the early detection of various diseases to prevent life-threatening cases. In this context, we present a model specifically designed to detect signs of pneumonia using X-ray images of both healthy and unhealthy lungs. Our approach involves the implementation of custom neural network layers and a custom data generator that allows the extraction of trainable images directly from text files. Through this project, we aim to demonstrate the effectiveness of deep learning in medical diagnostics, focusing on pneumonia detection as a case study.       
+ Deep learning has become a central tool in the medical field, playing a crucial role in the early detection of various diseases to prevent life-threatening cases. In this context, we present a model specifically designed to detect signs of pneumonia using X-ray images of both healthy and unhealthy lungs. Our approach involves the implementation of custom neural network layers and a custom data generator that allows the extraction of trainable images directly from text files. Through this project, we aim to demonstrate the effectiveness of deep learning in medical diagnostics, focusing on pneumonia detection as a case study.       
 
 # 2. Implementation
 
@@ -100,7 +100,7 @@ The PyTorch linear layer applies a linear transformation to the input, which can
 <br>
 Here X is the input, A is the weight matrix and B is the bias. Dimensions for each matrix/vector is specified below the terms in the equation. in and out is the in- and output dimensions, and d is some arbitrary number of rows. The PyTorch linear layer needs 'in_feature' (int), 'out_features' (int), and bias (bool). We will follow this construction for our own linear layer.          
 
-In line 2, we initialize the linear layer, and specify names for the inputs. Then lines 4,5 and 6 define the instance attributes from the inputs. Then line 7 and 9 defines the learnable parameters weights and bias. Both of the parameters are initialized with the torch method randn, which returns a tensor consisting of random numbers from a standard normal distribution. The dimensions of the tensor for the weights is '(outFeatures, inFeatures)', and for the bias '(outFeatures)'. For both parameters, the tensors are wrapped in torch.nn.Parameter, to let the network know that these are trainable features. Further, if bias is not true, the parameter is set to 'None' in line 11.
+<br>In line 2, we initialize the linear layer, and specify names for the inputs. Then lines 4,5 and 6 define the instance attributes from the inputs. Then line 7 and 9 defines the learnable parameters weights and bias. Both of the parameters are initialized with the torch method randn, which returns a tensor consisting of random numbers from a standard normal distribution. The dimensions of the tensor for the weights is '(outFeatures, inFeatures)', and for the bias '(outFeatures)'. For both parameters, the tensors are wrapped in torch.nn.Parameter, to let the network know that these are trainable features. Further, if bias is not true, the parameter is set to 'None' in line 11.
 
 In the forward method, the mathematical operations described in equation(1) are defined in line 14. Further, lines 11 and 12 are added to check if the dimensions of the input and the weight matrix match, since this is required for the operations in line 14.
 
@@ -237,7 +237,6 @@ def create_model(resolution, load_previous_model=True):
 <p align="center">
      Figure 2 : Our Model Architecture.
 </p>
-<br>
 
 # 3. Visualizing the results
 <br>
