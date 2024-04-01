@@ -4,12 +4,13 @@ Deep learning has become a central tool in the medical field, playing a crucial 
 life-threatening cases. In this context, we present a model specifically designed to detect signs of pneumonia using X-ray images of both healthy
 and unhealthy lungs. Our approach involves the implementation of custom neural network layers and a custom data generator that allows the
 extraction of trainable images directly from text files. Through this project, we aim to demonstrate the effectiveness of deep learning in
-medical diagnostics, focusing on pneumonia detection as a case study.
+medical diagnostics, focusing on pneumonia detection as a case study.       
 
 # 2. Implementation
 
 ## 2.1 Datagenerator
 
+``` python
      resolution = 224
         transform = transforms.Compose([
             transforms.Resize((resolution, resolution)),
@@ -32,6 +33,7 @@ medical diagnostics, focusing on pneumonia detection as a case study.
         train(model, training_loader,eval_loader, epochs=20, save=True)
 
         model_test(model,testing_loader)
+```
 
 The training set of our model consists mainly of .jpeg images, and to seamlessly integrate these images into our model, we chose the
 convenience of the PIL library. Though the image data is random split into training and valuation data before we begin training
@@ -43,7 +45,7 @@ When retrieving an image from the data frame, our approach involves reading the 
 channel representation (since the model is trained on 3-color images) and apply augmentations. Notably, the augmentations applied to the
 images in our test set mirror those applied to the images in our training set.
 
-
+``` python
     class CustomDataset(Dataset):
         def __init__(self, path, transform=None):
             self.data_frame = None
@@ -90,13 +92,16 @@ images in our test set mirror those applied to the images in our training set.
                 df["labels"] = labels
 
             self.data_frame = df
+```
 
 ## 2.2 Linear layer
 
 The PyTorch linear layer applies a linear transformation to the input, which can be described as below 
 
 $$\underset{d\times out}{\mathrm{Y}} =  \underset{d\times in}{X} \times 
-\underset{in\times out}{A^T} + \underset{1\times out}{B}\label{linear}$$ 
+\underset{in\times out}{A^T} + \underset{1\times out}{B}\label{linear}$$
+
+equation(1)          
 
 Here X is the input, A is the weight matrix and B is the bias. Dimensions for each matrix/vector is specified below the terms
 in the equation. in and out is the in- and output dimensions, and d is some arbitrary number of rows. The PyTorch linear layer needs
@@ -109,12 +114,11 @@ weights is '(outFeatures, inFeatures)', and for the bias '(outFeatures)'. For bo
 torch.nn.Parameter, to let the network know that these are trainable features. Further, if bias is not true, the parameter is set to 'None'
 in line 11.
 
-In the forward method, the mathematical operations described in equation [\[linear\]](#linear){reference-type="ref" reference="linear"} are
-defined in line 14. Further, lines 11 and 12 are added to check if the dimensions of the input and the weight matrix match, since this is
+In the forward method, the mathematical operations described in equation(1) are defined in line 14. Further, lines 11 and 12 are added to check if the dimensions of the input and the weight matrix match, since this is
 required for the operations in line 14.
 
 In the mathematical operations we have that $X\times A^T$ gives an output of size d X out, then before the bias can be added the concept of
-broadcasting is being utilized so expand the bias vector to the correct dimensions d X out.
+broadcasting is being utilized so expand the bias vector to the correct dimensions d X out.        
 
 ``` python
 class Linearlayer(nn.Module):
@@ -136,26 +140,17 @@ class Linearlayer(nn.Module):
         output = input @ self.weights.t() + self.bias
         return output
 ```
-
+      
 ## 2.3 Convolutional layer
 
-Similarly to the implementation of the linear layer, the convolutional layer starts with defining instance attributes in lines 4 to 8. The
-parameters are initialized to tensors in the required dimensions and are wrapped in torch.nn.Parameter method to make these learnable parameters.
-The first 4 lines (lines 11-14) in the forward function get/compute needed variables for executing the convolution. Line 15 initializes the
-output to be a tensor of zeroes.
+Similarly to the implementation of the linear layer, the convolutional layer starts with defining instance attributes in lines 4 to 8. The parameters are initialized to tensors in the required dimensions and are wrapped in torch.nn.Parameter method to make these learnable parameters.The first 4 lines (lines 11-14) in the forward function get/compute needed variables for executing the convolution. Line 15 initializes the output to be a tensor of zeroes.
 
-Lines 17 to 23 perform convolution on the input. The figure below illustrates a simple example of correlation. Correlation where the
-kernel is flipped is equal to convolution. In a neural network, it is unimportant if the layer is using correlation or convolution. The
-network will learn the appropriate values of the kernel nevertheless.
+Lines 17 to 23 perform convolution on the input. The figure below illustrates a simple example of correlation. Correlation where the kernel is flipped is equal to convolution. In a neural network, it is unimportant if the layer is using correlation or convolution. The network will learn the appropriate values of the kernel nevertheless.
 
-In the example, the output of 19 is computed by multiplying the matrices elementwise and then taking the sum. Then the shaded area in the input
-matrix is moves one to the right and the computation is repeated for the new values to get 25. This same computation is replicated in lines 21-22
-in the code, where for every i and j in the dimensions of the output matrix we compute the elementwise multiplication between the kernel and
-a submatrix of the input. The notation 'i:i+kernelHeight' gives the values from i to i+kernelHeight -1, that is the last value is not
-included and the submatrix of the input is of the same dimensions as the kernel. Finally, in line 23 a bias is added.
+In the example, the output of 19 is computed by multiplying the matrices elementwise and then taking the sum. Then the shaded area in the input matrix is moves one to the right and the computation is repeated for the new values to get 25. This same computation is replicated in lines 21-22 in the code, where for every i and j in the dimensions of the output matrix we compute the elementwise multiplication between the kernel and a submatrix of the input. The notation 'i:i+kernelHeight' gives the values from i to i+kernelHeight -1, that is the last value is not included and the submatrix of the input is of the same dimensions as the kernel. Finally, in line 23 a bias is added.
 
 <img src = "picture/correlation1.png" alt = "correlation">
-Figure 1 : Simple example of correlation between input and kernel.
+Figure 1 : Simple example of correlation between input and kernel.       
 
 ``` python
 class convLayer(nn.Module):
@@ -190,11 +185,7 @@ class convLayer(nn.Module):
 
 ## 2.4 Model architecture
 
-We used a sequential model with 13 layers for the network architecture. Figure 2 shows the structure visually. The model uses the binary cross
-entropy function to classify binary data. Convolutional layers (conv2)(first using the custom layer but it took so long that it timed
-out colab so switched to inbuilt convolution layer) extract features, ReLU activation introduces nonlinearity, pooling layers downsample
-spatial dimensions, and dropout layers prevent overfitting. The adaptive average pooling layer prepares the data for fully connected layers,
-which act as classifiers for the final binary prediction.
+We used a sequential model with 13 layers for the network architecture. Figure 2 shows the structure visually. The model uses the binary cross entropy function to classify binary data. Convolutional layers (conv2)(first using the custom layer but it took so long that it timed out colab so switched to inbuilt convolution layer) extract features, ReLU activation introduces nonlinearity, pooling layers downsample spatial dimensions, and dropout layers prevent overfitting. The adaptive average pooling layer prepares the data for fully connected layers, which act as classifiers for the final binary prediction.      
 
 ``` python
 class CustomModel(nn.Module):
@@ -247,22 +238,16 @@ def create_model(resolution, load_previous_model=True):
         return model
 ```
 
-![Our Model Architecture](model architecture.png){#fig:enter-label width="0.7\\linewidth"}
+<img src = "picture/architecture.png" alt = "architecture">
+Figure 2 : Our Model Architecture.       
 
 # 3. Visualizing the results
 
-![eval accuracy as a graph with the final test accuracy as a line](eval result.png){#fig:enter-label width="0.5\\linewidth"}
+<img src = "picture/result.png" alt = "result">
+Figure 3 : eval accuracy as a graph with the final test accuracy as a line.        
 
-The accuracy for the evaluation set is really good as can be seen on the graph above. The test accuracy however is less good. This suggest some
-difference between the training and evaluation sets and test possible origins for these difference are discussed in the conclusion. 
+The accuracy for the evaluation set is really good as can be seen on the graph above. The test accuracy however is less good. This suggest some difference between the training and evaluation sets and test possible origins for these difference are discussed in the conclusion. 
 
 # 4. Conclusion
 
-Our model classified the validation set with high accuracy getting around 90 percent when fully trained. However, our model did poorer on
-the test set where it only scored around 60 percent. This difference in results can be a consequence of a few different sources. The first could
-be the transformation from txt file to rbg pil image. This made the members of the test data set slightly different enough from the other
-two datasets, so that they were harder to classify. The second source could be the small size of the test data set which means that there is a
-greater probability for big variance in the test members won't be absorbed by the size of the data set. The composition of the data sets
-could also play a minor role since the training and the evaluation sets were even split on healthy and unhealthy lungs, where the test set had
-around a 60 40 spilt. The convolution layer we designed was incredibly much slower than the actual convolution layer since our implementation
-was relatively simple.
+Our model classified the validation set with high accuracy getting around 90 percent when fully trained. However, our model did poorer on the test set where it only scored around 60 percent. This difference in results can be a consequence of a few different sources. The first could be the transformation from txt file to rbg pil image. This made the members of the test data set slightly different enough from the other two datasets, so that they were harder to classify. The second source could be the small size of the test data set which means that there is a greater probability for big variance in the test members won't be absorbed by the size of the data set. The composition of the data sets could also play a minor role since the training and the evaluation sets were even split on healthy and unhealthy lungs, where the test set had around a 60 40 spilt. The convolution layer we designed was incredibly much slower than the actual convolution layer since our implementation was relatively simple.
