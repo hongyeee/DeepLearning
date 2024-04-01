@@ -1,10 +1,6 @@
 # 1. Introduction
 
-Deep learning has become a central tool in the medical field, playing a crucial role in the early detection of various diseases to prevent
-life-threatening cases. In this context, we present a model specifically designed to detect signs of pneumonia using X-ray images of both healthy
-and unhealthy lungs. Our approach involves the implementation of custom neural network layers and a custom data generator that allows the
-extraction of trainable images directly from text files. Through this project, we aim to demonstrate the effectiveness of deep learning in
-medical diagnostics, focusing on pneumonia detection as a case study.       
+Deep learning has become a central tool in the medical field, playing a crucial role in the early detection of various diseases to prevent life-threatening cases. In this context, we present a model specifically designed to detect signs of pneumonia using X-ray images of both healthy and unhealthy lungs. Our approach involves the implementation of custom neural network layers and a custom data generator that allows the extraction of trainable images directly from text files. Through this project, we aim to demonstrate the effectiveness of deep learning in medical diagnostics, focusing on pneumonia detection as a case study.       
 
 # 2. Implementation
 
@@ -35,15 +31,11 @@ medical diagnostics, focusing on pneumonia detection as a case study.
         model_test(model,testing_loader)
 ```
 
-The training set of our model consists mainly of .jpeg images, and to seamlessly integrate these images into our model, we chose the
-convenience of the PIL library. Though the image data is random split into training and valuation data before we begin training
+The training set of our model consists mainly of .jpeg images, and to seamlessly integrate these images into our model, we chose the convenience of the PIL library. Though the image data is random split into training and valuation data before we begin training
 
-In contrast, the test set uses a unique format - a collection of .txt files. Each file encapsulates a 224x224 matrix representing a
-monochromatic image. Recognizing this unconventional data format, we developed a custom data generator explicitly tailored to our use case.
+In contrast, the test set uses a unique format - a collection of .txt files. Each file encapsulates a 224x224 matrix representing a monochromatic image. Recognizing this unconventional data format, we developed a custom data generator explicitly tailored to our use case.
 
-When retrieving an image from the data frame, our approach involves reading the file based on its path. We then convert it into a 3-color
-channel representation (since the model is trained on 3-color images) and apply augmentations. Notably, the augmentations applied to the
-images in our test set mirror those applied to the images in our training set.
+When retrieving an image from the data frame, our approach involves reading the file based on its path. We then convert it into a 3-color channel representation (since the model is trained on 3-color images) and apply augmentations. Notably, the augmentations applied to the images in our test set mirror those applied to the images in our training set.
 
 ``` python
     class CustomDataset(Dataset):
@@ -98,27 +90,22 @@ images in our test set mirror those applied to the images in our training set.
 
 The PyTorch linear layer applies a linear transformation to the input, which can be described as below 
 
-$$\underset{d\times out}{\mathrm{Y}} =  \underset{d\times in}{X} \times 
-\underset{in\times out}{A^T} + \underset{1\times out}{B}\label{linear}$$
+<br>
+<p align="center">
+     <img src = "picture/linear layer.png" alt = "linear layer">
+</p>
+<p align="center">
+     Equation (1)
+</p>
+<br>
+Here X is the input, A is the weight matrix and B is the bias. Dimensions for each matrix/vector is specified below the terms in the equation. in and out is the in- and output dimensions, and d is some arbitrary number of rows. The PyTorch linear layer needs 'in_feature' (int), 'out_features' (int), and bias (bool). We will follow this construction for our own linear layer.          
 
-equation(1)          
+In line 2, we initialize the linear layer, and specify names for the inputs. Then lines 4,5 and 6 define the instance attributes from the inputs. Then line 7 and 9 defines the learnable parameters weights and bias. Both of the parameters are initialized with the torch method randn, which returns a tensor consisting of random numbers from a standard normal distribution. The dimensions of the tensor for the weights is '(outFeatures, inFeatures)', and for the bias '(outFeatures)'. For both parameters, the tensors are wrapped in torch.nn.Parameter, to let the network know that these are trainable features. Further, if bias is not true, the parameter is set to 'None' in line 11.
 
-Here X is the input, A is the weight matrix and B is the bias. Dimensions for each matrix/vector is specified below the terms
-in the equation. in and out is the in- and output dimensions, and d is some arbitrary number of rows. The PyTorch linear layer needs
-'in_feature' (int), 'out_features' (int), and bias (bool). We will follow this construction for our own linear layer.
+In the forward method, the mathematical operations described in equation(1) are defined in line 14. Further, lines 11 and 12 are added to check if the dimensions of the input and the weight matrix match, since this is required for the operations in line 14.
 
-In line 2, we initialize the linear layer, and specify names for the inputs. Then lines 4,5 and 6 define the instance attributes from the
-inputs. Then line 7 and 9 defines the learnable parameters weights and bias. Both of the parameters are initialized with the torch method
-randn, which returns a tensor consisting of random numbers from a standard normal distribution. The dimensions of the tensor for the
-weights is '(outFeatures, inFeatures)', and for the bias '(outFeatures)'. For both parameters, the tensors are wrapped in
-torch.nn.Parameter, to let the network know that these are trainable features. Further, if bias is not true, the parameter is set to 'None'
-in line 11.
-
-In the forward method, the mathematical operations described in equation(1) are defined in line 14. Further, lines 11 and 12 are added to check if the dimensions of the input and the weight matrix match, since this is
-required for the operations in line 14.
-
-In the mathematical operations we have that $X\times A^T$ gives an output of size d X out, then before the bias can be added the concept of
-broadcasting is being utilized so expand the bias vector to the correct dimensions d X out.        
+In the mathematical operations we have that $X\times A^T$ gives an output of size d X out, then before the bias can be added the concept of broadcasting is being utilized so expand the bias vector to the correct dimensions d X out.
+<br>
 
 ``` python
 class Linearlayer(nn.Module):
@@ -149,8 +136,14 @@ Lines 17 to 23 perform convolution on the input. The figure below illustrates a 
 
 In the example, the output of 19 is computed by multiplying the matrices elementwise and then taking the sum. Then the shaded area in the input matrix is moves one to the right and the computation is repeated for the new values to get 25. This same computation is replicated in lines 21-22 in the code, where for every i and j in the dimensions of the output matrix we compute the elementwise multiplication between the kernel and a submatrix of the input. The notation 'i:i+kernelHeight' gives the values from i to i+kernelHeight -1, that is the last value is not included and the submatrix of the input is of the same dimensions as the kernel. Finally, in line 23 a bias is added.
 
-<img src = "picture/correlation1.png" alt = "correlation">
-Figure 1 : Simple example of correlation between input and kernel.       
+<br>
+<p align="center">
+     <img src = "picture/correlation1.png" alt = "correlation">
+</p>
+<p align="center">
+     Figure 1 : Simple example of correlation between input and kernel.
+</p>
+<br>
 
 ``` python
 class convLayer(nn.Module):
@@ -237,15 +230,24 @@ def create_model(resolution, load_previous_model=True):
         model = CustomModel(resolution)
         return model
 ```
-
-<img src = "picture/architecture.png" alt = "architecture">
-Figure 2 : Our Model Architecture.       
+<br>
+<p align="center">
+ <img src = "picture/model architecture.png" alt = "architecture">
+</p>
+<p align="center">
+     Figure 2 : Our Model Architecture.
+</p>
+<br>
 
 # 3. Visualizing the results
-
-<img src = "picture/result.png" alt = "result">
-Figure 3 : eval accuracy as a graph with the final test accuracy as a line.        
-
+<br>
+<p align="center">
+<img src = "picture/eval result.png" alt = "result">
+</p>
+<p align="center">
+     Figure 3 : eval accuracy as a graph with the final test accuracy as a line.
+</p>
+<br>
 The accuracy for the evaluation set is really good as can be seen on the graph above. The test accuracy however is less good. This suggest some difference between the training and evaluation sets and test possible origins for these difference are discussed in the conclusion. 
 
 # 4. Conclusion
