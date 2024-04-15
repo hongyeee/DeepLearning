@@ -79,31 +79,7 @@ class linLayer(nn.Module):
         return output
 
 class convLayer(nn.Module):
-    def __init__(self, inFeatures, outFet Accuracy: {accuracy}')
-
-if __name__ == "__main__":
-    resolution = 224
-    transform = transforms.Compose([
-        transforms.Resize((resolution, resolution)),
-        transforms.ToTensor(),
-        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-    ])
-    first_set= ImageFolder(root='./data/training', transform=transform)
-    training_set, eval_set = torch.utils.data.random_split(first_set, [2412, 270])
-
-    def custom_collate_fn(batch):
-        images, labels = zip(*batch)
-        return torch.stack(images), torch.tensor(labels)
-
-    training_loader = DataLoader(training_set, batch_size=20, shuffle=True, collate_fn=custom_collate_fn)
-    eval_loader=DataLoader(eval_set,batch_size=1, shuffle=True, collate_fn=custom_collate_fn)
-    testing_set = CustomDataset("./data/test", transform=transform)
-    testing_loader = DataLoader(testing_set, batch_size=1, shuffle=False)
-
-    model = create_model(resolution, load_previous_model=False)
-    train(model, training_loader,eval_loader, epochs=5, save=True)
-    model_test(model,testing_loader)
-atures, kernelSize, bias=True, activation='ReLU'):
+    def __init__(self, inFeatures, outFeatures, kernelSize, bias=True, activation='ReLU'):
         super(convLayer, self).__init__()
         self.conv = nn.Conv2d(inFeatures, outFeatures, kernelSize)
 
@@ -215,4 +191,28 @@ def model_test(model, testing_loader):
             correct += (predicted == labels).sum().item()
 
     accuracy = correct / total
-    print(f'Tes
+    print(f'Test Accuracy: {accuracy}')
+
+if __name__ == "__main__":
+    resolution = 224
+    transform = transforms.Compose([
+        transforms.Resize((resolution, resolution)),
+        transforms.ToTensor(),
+        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+    ])
+    first_set= ImageFolder(root='./data/training', transform=transform)
+    training_set, eval_set = torch.utils.data.random_split(first_set, [2412, 270])
+
+    def custom_collate_fn(batch):
+        images, labels = zip(*batch)
+        return torch.stack(images), torch.tensor(labels)
+
+    training_loader = DataLoader(training_set, batch_size=20, shuffle=True, collate_fn=custom_collate_fn)
+    eval_loader=DataLoader(eval_set,batch_size=1, shuffle=True, collate_fn=custom_collate_fn)
+    testing_set = CustomDataset("./data/test", transform=transform)
+    testing_loader = DataLoader(testing_set, batch_size=1, shuffle=False)
+
+    model = create_model(resolution, load_previous_model=False)
+    train(model, training_loader,eval_loader, epochs=5, save=True)
+    model_test(model,testing_loader)
+
